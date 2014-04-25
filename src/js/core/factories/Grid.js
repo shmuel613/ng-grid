@@ -293,7 +293,11 @@ angular.module('ui.grid')
       // var deletedRows = newInN(unfoundNewRowsToFind, (unfoundOldRows || self.rows), null, 'entity');
 
       for (i = 0; i < deletedRows.length; i++) {
-        self.rows.splice( self.rows.indexOf(deletedRows[i] ), 1 );
+        if (self.options.enableRowHashing) {
+          self.rowHashMap.remove(deletedRows[i].entity);
+        }
+
+        self.rows.splice( self.rows.indexOf(deletedRows[i]), 1 );
       }
     }
     
