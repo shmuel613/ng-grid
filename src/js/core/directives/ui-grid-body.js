@@ -44,7 +44,6 @@
             return;
           }
 
-          // scrollTop = uiGridCtrl.canvas[0].scrollHeight * scrollPercentage;
           scrollTop = uiGridCtrl.grid.getCanvasHeight() * scrollPercentage;
 
           uiGridCtrl.adjustRows(scrollTop, scrollPercentage);
@@ -60,6 +59,11 @@
           uiGridCtrl.maxRowIndex = maxRowIndex;
 
           var curRowIndex = uiGridCtrl.prevRowScrollIndex;
+
+          // Calculate the scroll percentage according to the scrollTop location, if no percentage was provided
+          if ((typeof(scrollPercentage) === 'undefined' || scrollPercentage === null) && scrollTop) {
+            scrollPercentage = scrollTop / uiGridCtrl.grid.getCanvasHeight();
+          }
           
           var rowIndex = Math.ceil(Math.min(maxRowIndex, maxRowIndex * scrollPercentage));
 
@@ -102,6 +106,10 @@
 
         uiGridCtrl.redrawRows = function() {
           uiGridCtrl.adjustRows(uiGridCtrl.prevScrollTop, uiGridCtrl.prevScrolltopPercentage);
+        };
+
+        uiGridCtrl.redrawRowsByScrolltop = function() {
+          uiGridCtrl.adjustRows(uiGridCtrl.prevScrollTop, null);
         };
 
         // Virtualization for horizontal scrolling
