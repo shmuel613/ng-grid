@@ -150,6 +150,27 @@ angular.module('ui.grid')
     }
   };
 
+  function newInN(o, n, oAccessor, nAccessor) {
+    var t = [];
+    for (var i=0; i<n.length; i++) {
+      var nV = nAccessor ? n[i][nAccessor] : n[i];
+      
+      var found = false;
+      for (var j=0; j<o.length; j++) {
+        var oV = oAccessor ? o[j][oAccessor] : o[j];
+        if (nV === oV) {
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        t.push(nV);
+      }
+    }
+    
+    return t;
+  }
+
   /**
    * @ngdoc function
    * @name modifyRows
@@ -160,31 +181,118 @@ angular.module('ui.grid')
    * Rows are identified using the gridOptions.rowEquality function
    */
   Grid.prototype.modifyRows = function modifyRows(newRawData) {
-    var self = this;
+    var self = this,
+        i,
+        newRow;
 
     if (self.rows.length === 0 && newRawData.length > 0) {
-      self.addRows(newRawData);
-    }
-    else {
-      //look for new rows
-      var newRows = newRawData.filter(function (newItem) {
-        return !self.rows.some(function(oldRow) {
-          return self.options.rowEquality(oldRow.entity, newItem);
-        });
-      });
+      if (self.options.enableRowHashing) {
+        self.rowHashMap = new HashMap();
 
-      for (i = 0; i < newRows.length; i++) {
-        self.addRows([newRows[i]]);
+        for (i=0; i<newRawData.length; i++) {
+          newRow = newRawData[i];
+
+          self.rowHashMap.put(newRow, {
+            i: i,
+            entity: newRow
+          });
+        }
       }
 
-      //look for deleted rows
-      var deletedRows = self.rows.filter(function (oldRow) {
-        return !newRawData.some(function (newItem) {
-          return self.options.rowEquality(newItem, oldRow.entity);
-        });
-      });
+      self.addRows(newRawData);
+    }
+    else if (newRawData.length > 0) {
+      var unfoundNewRows, unfoundOldRows, unfoundNewRowsToFind;
 
-      for (var i = 0; i < deletedRows.length; i++) {
+      // If row hashing is turned on
+      if (self.options.enableRowHashing) {
+        // Array of new rows that haven't been found in the old rowset
+        unfoundNewRows = [];
+        unfoundNewRowsToFind = [];
+        // Map of old rows that haven't been found in the new rowset
+        var foundOldRows = {};
+        unfoundOldRows = [];
+
+        // Create the row HashMap if it doesn't exist already
+        if (!self.rowHashMap) { self.rowHashMap = new HashMap(); }
+        var rowhash = self.rowHashMap;
+        
+        // Make sure every new row has a hash
+        for (i = 0; i < newRawData.length; i++) {
+          newRow = newRawData[i];
+
+          // Flag this row as needing to be manually found if it didn't come in with a $$hashKey
+          var mustFind = false;
+          if (! newRow.$$hashKey) {
+            // $log.debug('must find!');
+            mustFind = true;
+          }
+
+          // See if the new row is already in the rowhash
+          var found = rowhash.get(newRow);
+          // If so...
+          if (found) {
+            // See if it's already being used by as GridRow
+            if (found.row) {
+              // If so, mark this new row as being found
+              foundOldRows[gridUtil.hashKey(newRow)] = true;
+            }
+          }
+          else {
+            // Put the row in the hashmap with the index it corresponds to
+            rowhash.put(newRow, {
+              i: i,
+              entity: newRow
+            });
+            
+            // unfoundNewRows[gridUtil.hashKey(newRow)] = true;
+            if (mustFind) {
+              unfoundNewRowsToFind.push(newRow);
+            }
+            else {
+              unfoundNewRows.push(newRow);
+            }
+          }
+        }
+
+        // Build the list of unfound old rows
+        for (i = 0; i < self.rows.length; i++) {
+          var row = self.rows[i];
+          var hash = gridUtil.hashKey(row.entity);
+          if (!foundOldRows[hash]) {
+            // unfoundOldRows[hash] = row;
+            unfoundOldRows.push(row);
+          }
+        }
+      }
+
+      // Look for new rows
+      var newRows = unfoundNewRows || [];
+      var unfoundNew = (unfoundNewRowsToFind || newRawData);
+      // var iter = 0;
+      // newRows = newRows.concat(unfoundNew.filter(function (newItem) {
+      //   return !self.rows.some(function(oldRow) {
+      //     iter++;
+      //     return self.options.rowEquality(oldRow.entity, newItem);
+      //   });
+      // }));
+      newRows = newRows.concat(newInN(self.rows, unfoundNew, 'entity'));
+
+      /*for (i = 0; i < newRows.length; i++) {
+        self.addRows([newRows[i]]);
+      }*/
+      self.addRows(newRows);
+
+      // Look for deleted rows
+      // var deletedRows = (unfoundOldRows || self.rows).filter(function (oldRow) {
+      //   return !newRawData.some(function (newItem) {
+      //     return self.options.rowEquality(newItem, oldRow.entity);
+      //   });
+      // });
+      var deletedRows = self.getDeletedRows((unfoundOldRows || self.rows), newRawData);
+      // var deletedRows = newInN(unfoundNewRowsToFind, (unfoundOldRows || self.rows), null, 'entity');
+
+      for (i = 0; i < deletedRows.length; i++) {
         self.rows.splice( self.rows.indexOf(deletedRows[i] ), 1 );
       }
     }
@@ -193,6 +301,15 @@ angular.module('ui.grid')
       .then(function (renderableRows) {
         return self.setVisibleRows(renderableRows);
       });
+  };
+
+  Grid.prototype.getDeletedRows = function(oldRows, newRows) {
+    var self = this;
+    return oldRows.filter(function (oldRow) {
+      return !newRows.some(function (newItem) {
+        return self.options.rowEquality(newItem, oldRow.entity);
+      });
+    });
   };
 
   /**
@@ -206,7 +323,16 @@ angular.module('ui.grid')
     var self = this;
 
     for (var i=0; i < newRawData.length; i++) {
-      self.rows.push( self.processRowBuilders(new GridRow(newRawData[i], i)) );
+      var newRow = self.processRowBuilders(new GridRow(newRawData[i], i));
+
+      if (self.options.enableRowHashing) {
+        var found = self.rowHashMap.get(newRow.entity);
+        if (found) {
+          found.row = newRow;
+        }
+      }
+
+      self.rows.push(newRow);
     }
   };
 
@@ -672,6 +798,53 @@ angular.module('ui.grid')
     }
 
     return $q.when(column);
+  };
+
+  /**
+   * communicate to outside world that we are done with initial rendering
+   */
+  Grid.prototype.renderingComplete = function(){
+    if(angular.isFunction(this.options.onRegisterEvents)){
+      this.options.onRegisterEvents(this.events);
+    }
+  };
+
+  // Blatantly stolen from Angular as it isn't exposed (yet? 2.0?)
+  function HashMap(array) {
+    if (angular.isArray(array)) {
+      for (var i=0; i<array.length; i++) {
+        this.put(array[i], array[i]);
+      }
+    }
+  }
+
+  HashMap.prototype = {
+    /**
+     * Store key value pair
+     * @param key key to store can be any type
+     * @param value value to store can be any type
+     */
+    put: function(key, value) {
+      this[gridUtil.hashKey(key)] = value;
+    },
+
+    /**
+     * @param key
+     * @returns {Object} the value for the key
+     */
+    get: function(key) {
+      return this[gridUtil.hashKey(key)];
+    },
+
+    /**
+     * Remove the key/value pair
+     * @param key
+     */
+    remove: function(key) {
+      var value = this[key = gridUtil.hashKey(key)];
+      delete this[key];
+      return value;
+    }
   };
 
   return Grid;

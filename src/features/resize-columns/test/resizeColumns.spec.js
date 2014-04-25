@@ -1,4 +1,4 @@
-describe('ui.grid.resizeColumns', function () {
+xdescribe('ui.grid.resizeColumns', function () {
   var grid, $scope, $compile, recompile;
 
   var data = [

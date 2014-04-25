@@ -31,6 +31,20 @@ angular.module('ui.grid')
      */
     this.columnDefs = [];
 
+    /**
+     * @ngdoc boolean
+     * @name enableRowHashing
+     * @propertyOf ui.grid.class:GridOptions
+     * @description (optional) True by default. When enabled, this setting allows uiGrid to add
+     * `$$hashKey`-type properties (similar to Angular) to elements in the `data` array. This allows
+     * the grid to maintain state while vastly speeding up the process of altering `data` by adding/moving/removing rows.
+     * 
+     * Note that this DOES add properties to your data that you may not want, but they are stripped out when using `angular.toJson()`. IF
+     * you do not want this at all you can disable this setting but you will take a performance hit if you are using large numbers of rows
+     * and are altering the data set often.
+     */
+    this.enableRowHashing = true;
+
     this.headerRowHeight = 30;
     this.rowHeight = 30;
     this.maxVisibleRowCount = 200;

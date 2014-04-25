@@ -1,6 +1,12 @@
 # TODO
 
-# CURRENT (row filtering)
+# CURRENT
+
+1. [TODO] - Steal Angular's hashKey() / HashMap code and use it for row lookups.
+  - Use a prefix in our hashes 'uiGgrid-'
+  - Or use a different hash property: $$uiGridHashKey
+1. [TODO] - Move row filtering to feature module.
+1. [TODO] - Remove xdescribe from resizeColumns.spec.js
 
 1. [TODO] - Make 'No Rows' message i18n
 1. [BUG] - i18n causes an exception if a given value is not present.
