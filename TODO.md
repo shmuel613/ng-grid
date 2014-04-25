@@ -2,9 +2,13 @@
 
 # CURRENT
 
-1. [TODO] - Steal Angular's hashKey() / HashMap code and use it for row lookups.
-  - Use a prefix in our hashes 'uiGgrid-'
-  - Or use a different hash property: $$uiGridHashKey
+<!-- 1. [TODO] - Steal Angular's hashKey() / HashMap code and use it for row lookups. -->
+  <!-- - Use a prefix in our hashes 'uiGgrid-' -->
+  <!-- - Or use a different hash property: $$uiGridHashKey -->
+1. [TODO] - Change the deleted row check to use for newInN() instead of forEach().
+1. [TODO] - Allow identity function for row data, rather than using $$hashKey.
+
+
 1. [TODO] - Move row filtering to feature module.
 1. [TODO] - Remove xdescribe from resizeColumns.spec.js
 

@@ -150,7 +150,9 @@ angular.module('ui.grid')
     }
   };
 
-  function newInN(o, n, oAccessor, nAccessor) {
+  Grid.prototype.newInN = function newInN(o, n, oAccessor, nAccessor) {
+    var self = this;
+
     var t = [];
     for (var i=0; i<n.length; i++) {
       var nV = nAccessor ? n[i][nAccessor] : n[i];
@@ -158,7 +160,7 @@ angular.module('ui.grid')
       var found = false;
       for (var j=0; j<o.length; j++) {
         var oV = oAccessor ? o[j][oAccessor] : o[j];
-        if (nV === oV) {
+        if (self.options.rowEquality(nV, oV)) {
           found = true;
           break;
         }
@@ -169,7 +171,7 @@ angular.module('ui.grid')
     }
     
     return t;
-  }
+  };
 
   /**
    * @ngdoc function
@@ -276,7 +278,7 @@ angular.module('ui.grid')
       //     return self.options.rowEquality(oldRow.entity, newItem);
       //   });
       // }));
-      newRows = newRows.concat(newInN(self.rows, unfoundNew, 'entity'));
+      newRows = newRows.concat(self.newInN(self.rows, unfoundNew, 'entity'));
 
       /*for (i = 0; i < newRows.length; i++) {
         self.addRows([newRows[i]]);
@@ -309,6 +311,7 @@ angular.module('ui.grid')
 
   Grid.prototype.getDeletedRows = function(oldRows, newRows) {
     var self = this;
+
     return oldRows.filter(function (oldRow) {
       return !newRows.some(function (newItem) {
         return self.options.rowEquality(newItem, oldRow.entity);
