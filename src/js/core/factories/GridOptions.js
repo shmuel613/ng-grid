@@ -1,7 +1,7 @@
 (function(){
 
 angular.module('ui.grid')
-.factory('GridOptions', [function() {
+.factory('GridOptions', ['gridUtil', function(gridUtil) {
 
   /**
    * @ngdoc function
@@ -44,6 +44,30 @@ angular.module('ui.grid')
      * and are altering the data set often.
      */
     this.enableRowHashing = true;
+
+    /**
+     * @ngdoc function
+     * @name rowIdentity
+     * @propertyOf ui.grid.class:GridOptions
+     * @description (optional) This function is used to get and, if necessary, set the value uniquely identifying this row.
+     * 
+     * By default it returns the `$$hashKey` property if it exists. If it doesn't it uses gridUtil.nextUid() to generate one
+     */
+    this.rowIdentity = function rowIdentity(row) {
+        return gridUtil.hashKey(row);
+    };
+
+    /**
+     * @ngdoc function
+     * @name getRowIdentity
+     * @propertyOf ui.grid.class:GridOptions
+     * @description (optional) This function returns the identity value uniquely identifying this row.
+     * 
+     * By default it returns the `$$hashKey` property but can be overridden to use any property or set of properties you want.
+     */
+    this.getRowIdentity = function rowIdentity(row) {
+        return row.$$hashKey;
+    };
 
     this.headerRowHeight = 30;
     this.rowHeight = 30;

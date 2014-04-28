@@ -7,6 +7,7 @@
   <!-- - Or use a different hash property: $$uiGridHashKey -->
 1. [TODO] - Change the deleted row check to use for newInN() instead of forEach().
 1. [TODO] - Allow identity function for row data, rather than using $$hashKey.
+1. [TODO] - Check out using grunt-jscs-checker for js style checks
 
 
 1. [TODO] - Move row filtering to feature module.
@@ -58,6 +59,9 @@
 
 # Cleanup
 
+1. [TODO] - Rename tutorials so they're consistent
+1. [TODO] - Re-order tutorials
+1. [TODO] - Build a tutorial index page.
 1. [TODO] - Remove commented-out dumps from gridUtil
 1. [TODO] - Rename gridUtil to uiGridUtil
 1. [TODO] - Rename GridUtil in uiGridBody to gridUtil or the above

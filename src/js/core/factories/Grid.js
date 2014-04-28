@@ -189,7 +189,9 @@ angular.module('ui.grid')
 
     if (self.rows.length === 0 && newRawData.length > 0) {
       if (self.options.enableRowHashing) {
-        self.rowHashMap = new HashMap();
+        if (!self.rowHashMap) {
+          self.createRowHashMap();
+        }
 
         for (i=0; i<newRawData.length; i++) {
           newRow = newRawData[i];
@@ -216,7 +218,9 @@ angular.module('ui.grid')
         unfoundOldRows = [];
 
         // Create the row HashMap if it doesn't exist already
-        if (!self.rowHashMap) { self.rowHashMap = new HashMap(); }
+        if (!self.rowHashMap) {
+          self.createRowHashMap();
+        }
         var rowhash = self.rowHashMap;
         
         // Make sure every new row has a hash
@@ -225,7 +229,7 @@ angular.module('ui.grid')
 
           // Flag this row as needing to be manually found if it didn't come in with a $$hashKey
           var mustFind = false;
-          if (! newRow.$$hashKey) {
+          if (! self.options.getRowIdentity(newRow)) {
             // $log.debug('must find!');
             mustFind = true;
           }
@@ -237,7 +241,7 @@ angular.module('ui.grid')
             // See if it's already being used by as GridRow
             if (found.row) {
               // If so, mark this new row as being found
-              foundOldRows[gridUtil.hashKey(newRow)] = true;
+              foundOldRows[self.options.rowIdentity(newRow)] = true;
             }
           }
           else {
@@ -247,7 +251,6 @@ angular.module('ui.grid')
               entity: newRow
             });
             
-            // unfoundNewRows[gridUtil.hashKey(newRow)] = true;
             if (mustFind) {
               unfoundNewRowsToFind.push(newRow);
             }
@@ -260,7 +263,7 @@ angular.module('ui.grid')
         // Build the list of unfound old rows
         for (i = 0; i < self.rows.length; i++) {
           var row = self.rows[i];
-          var hash = gridUtil.hashKey(row.entity);
+          var hash = self.options.rowIdentity(row.entity);
           if (!foundOldRows[hash]) {
             // unfoundOldRows[hash] = row;
             unfoundOldRows.push(row);
@@ -312,11 +315,14 @@ angular.module('ui.grid')
   Grid.prototype.getDeletedRows = function(oldRows, newRows) {
     var self = this;
 
-    return oldRows.filter(function (oldRow) {
+    var olds = oldRows.filter(function (oldRow) {
       return !newRows.some(function (newItem) {
         return self.options.rowEquality(newItem, oldRow.entity);
       });
     });
+    // var olds = self.newInN(newRows, oldRows, null, 'entity');
+    // dump('olds', olds);
+    return olds;
   };
 
   /**
@@ -816,23 +822,26 @@ angular.module('ui.grid')
     }
   };
 
-  // Blatantly stolen from Angular as it isn't exposed (yet? 2.0?)
-  function HashMap(array) {
-    if (angular.isArray(array)) {
-      for (var i=0; i<array.length; i++) {
-        this.put(array[i], array[i]);
-      }
-    }
-  }
+  Grid.prototype.createRowHashMap = function createRowHashMap() {
+    var self = this;
 
-  HashMap.prototype = {
+    var hashMap = new RowHashMap();
+    hashMap.grid = self;
+
+    self.rowHashMap = hashMap;
+  };
+
+  // Blatantly stolen from Angular as it isn't exposed (yet? 2.0?)
+  function RowHashMap() {}
+
+  RowHashMap.prototype = {
     /**
      * Store key value pair
      * @param key key to store can be any type
      * @param value value to store can be any type
      */
     put: function(key, value) {
-      this[gridUtil.hashKey(key)] = value;
+      this[this.grid.options.rowIdentity(key)] = value;
     },
 
     /**
@@ -840,7 +849,7 @@ angular.module('ui.grid')
      * @returns {Object} the value for the key
      */
     get: function(key) {
-      return this[gridUtil.hashKey(key)];
+      return this[this.grid.options.rowIdentity(key)];
     },
 
     /**
@@ -848,7 +857,7 @@ angular.module('ui.grid')
      * @param key
      */
     remove: function(key) {
-      var value = this[key = gridUtil.hashKey(key)];
+      var value = this[key = this.grid.options.rowIdentity(key)];
       delete this[key];
       return value;
     }
