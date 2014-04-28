@@ -18,13 +18,13 @@ All features are enabled to get an idea of performance
       $scope.gridOptions = {};
       $scope.gridOptions.data = 'myData';
       $scope.gridOptions.enableColumnResizing = true;
+      
       $scope.gridOptions.rowIdentity = function(row) {
         return row.id;
       };
       $scope.gridOptions.getRowIdentity = function(row) {
         return row.id;
       };
-      //$scope.gridOptions.enableRowHashing = false;
 
       $scope.gridOptions.columnDefs = [
         { name:'id', width:50 },
@@ -41,9 +41,7 @@ All features are enabled to get an idea of performance
         { name:'friends[0].name', displayName:'1st friend', width:150, enableCellEdit: true },
      ];
 
-      var endInterval = 15000;
-      var endDate = new Date();
-      endDate.setMilliseconds(endDate.getMilliseconds() + endInterval);
+      $scope.callsPending = 0;
 
       var i = 0;
       $scope.refreshData = function(){
@@ -51,16 +49,21 @@ All features are enabled to get an idea of performance
 
         var start = new Date();
         var sec = $interval(function () {
-          var left = parseInt((endDate - new Date()) / 1000, 10);
-          $scope.left = left + 's';
+          $scope.callsPending++;
+          
           $http.get('/data/500_complex.json')
             .success(function(data) {
+              $scope.callsPending--;
+
               data.forEach(function(row){
                 row.name = row.name + ' iter ' + i;
                 row.id = i;
                 i++;
                 $scope.myData.push(row);
               });
+            })
+            .error(function() {
+              $scope.callsPending--
             });
         }, 200);
 
@@ -76,7 +79,7 @@ All features are enabled to get an idea of performance
   </file>
   <file name="index.html">
     <div ng-controller="MainCtrl">
-      <button type="button" class="btn btn-success" ng-click="refreshData()">Refresh Data</button>  <!--<strong>Time Left:</strong> <span ng-bind="left"></span>-->
+      <button type="button" class="btn btn-success" ng-click="refreshData()">Refresh Data</button>  <strong>Calls Pending:</strong> <span ng-bind="callsPending"></span>
       <br>
       <br>
       <strong>{{ myData.length }} rows</strong>

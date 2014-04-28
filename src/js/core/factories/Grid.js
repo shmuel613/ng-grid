@@ -230,7 +230,6 @@ angular.module('ui.grid')
           // Flag this row as needing to be manually found if it didn't come in with a $$hashKey
           var mustFind = false;
           if (! self.options.getRowIdentity(newRow)) {
-            // $log.debug('must find!');
             mustFind = true;
           }
 
@@ -251,6 +250,7 @@ angular.module('ui.grid')
               entity: newRow
             });
             
+            // This row has to be searched for manually in the old row set
             if (mustFind) {
               unfoundNewRowsToFind.push(newRow);
             }
@@ -265,7 +265,6 @@ angular.module('ui.grid')
           var row = self.rows[i];
           var hash = self.options.rowIdentity(row.entity);
           if (!foundOldRows[hash]) {
-            // unfoundOldRows[hash] = row;
             unfoundOldRows.push(row);
           }
         }
@@ -273,7 +272,10 @@ angular.module('ui.grid')
 
       // Look for new rows
       var newRows = unfoundNewRows || [];
+
+      // The unfound new rows is either `unfoundNewRowsToFind`, if row hashing is turned on, or straight `newRawData` if it isn't
       var unfoundNew = (unfoundNewRowsToFind || newRawData);
+
       // var iter = 0;
       // newRows = newRows.concat(unfoundNew.filter(function (newItem) {
       //   return !self.rows.some(function(oldRow) {
@@ -281,6 +283,8 @@ angular.module('ui.grid')
       //     return self.options.rowEquality(oldRow.entity, newItem);
       //   });
       // }));
+
+      // Search for real new rows in `unfoundNew` and concat them onto `newRows`
       newRows = newRows.concat(self.newInN(self.rows, unfoundNew, 'entity'));
 
       /*for (i = 0; i < newRows.length; i++) {

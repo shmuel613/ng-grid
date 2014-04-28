@@ -6,12 +6,10 @@
   <!-- - Use a prefix in our hashes 'uiGgrid-' -->
   <!-- - Or use a different hash property: $$uiGridHashKey -->
 1. [TODO] - Change the deleted row check to use for newInN() instead of forEach().
-1. [TODO] - Allow identity function for row data, rather than using $$hashKey.
+<!-- 1. [TODO] - Allow identity function for row data, rather than using $$hashKey. -->
 1. [TODO] - Check out using grunt-jscs-checker for js style checks
 
-
 1. [TODO] - Move row filtering to feature module.
-1. [TODO] - Remove xdescribe from resizeColumns.spec.js
 
 1. [TODO] - Make 'No Rows' message i18n
 1. [BUG] - i18n causes an exception if a given value is not present.
@@ -56,6 +54,11 @@
 1. [TODO] - Add notes about browser version support and Angular version support to README.md
 1. [TODO] - Add handling for sorting null values with columnDef sortingAlgorithm (PR #940)
 1. [TODO] - Currently uiGridColumnMenu uses i18n to create the menu item text on link. If the language is changed, they won't update because they're not bound...
+
+# Grid Menu
+
+1. [TODO] - Add "master" grid menu that overlays the whole grid when open (should have a decent-size padding that leaves and overlay with high opacity).
+1. [TODO] - Make a master grid menu button using the font-awesome menu icon (add to fontello conf) that lives... somewhere... that won't move when columns scroll...
 
 # Cleanup
 
