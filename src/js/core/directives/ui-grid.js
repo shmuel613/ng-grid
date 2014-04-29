@@ -106,10 +106,12 @@
                 
                 if (self.viewport) {
                   // Re-draw our rows but stay in the same scrollTop location
-                  self.redrawRowsByScrolltop();
+                  // self.redrawRowsByScrolltop();
 
                   // Adjust the horizontal scroll back to 0 (TODO(c0bra): Do we need this??)
-                  self.adjustScrollHorizontal(self.prevScollLeft, 0, true);
+                  // self.adjustScrollHorizontal(self.prevScollLeft, 0, true);
+
+                  self.redrawInPlace();
                 }
 
                 $scope.$evalAsync(function() {

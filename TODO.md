@@ -2,9 +2,8 @@
 
 # CURRENT
 
-<!-- 1. [TODO] - Steal Angular's hashKey() / HashMap code and use it for row lookups. -->
-  <!-- - Use a prefix in our hashes 'uiGgrid-' -->
-  <!-- - Or use a different hash property: $$uiGridHashKey -->
+1. [TODO] - Whens scrolled to the right and we update data, it doesn't re-render the rows. Only the left-most ones...
+1. [BUG] - Rows change odd/even class if we add data and the grid is scrolled down... This is because the size of the data-set is changing, I think.
 1. [TODO] - Change the deleted row check to use for newInN() instead of forEach().
 <!-- 1. [TODO] - Allow identity function for row data, rather than using $$hashKey. -->
 1. [TODO] - Check out using grunt-jscs-checker for js style checks
