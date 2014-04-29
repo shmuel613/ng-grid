@@ -212,9 +212,11 @@ angular.module('ui.grid')
       if (self.options.enableRowHashing) {
         // Array of new rows that haven't been found in the old rowset
         unfoundNewRows = [];
+        // Array of new rows that we explicitly HAVE to search for manually in the old row set. They cannot be looked up by their identity (because it doesn't exist).
         unfoundNewRowsToFind = [];
-        // Map of old rows that haven't been found in the new rowset
+        // Map of rows that have been found in the new rowset
         var foundOldRows = {};
+        // Array of old rows that have NOT been found in the new rowset
         unfoundOldRows = [];
 
         // Create the row HashMap if it doesn't exist already
@@ -308,6 +310,14 @@ angular.module('ui.grid')
 
         self.rows.splice( self.rows.indexOf(deletedRows[i]), 1 );
       }
+    }
+    // Empty data set
+    else {
+      // Reset the row HashMap
+      self.createRowHashMap();
+
+      // Reset the rows length!
+      self.rows.length = 0;
     }
     
     return $q.when(self.processRowsProcessors(self.rows))
