@@ -150,6 +150,7 @@ angular.module('ui.grid')
     }
   };
 
+  // Return a list of items that exist in the `n` array but not the `o` array. Uses optional property accessors passed as third & fourth parameters
   Grid.prototype.newInN = function newInN(o, n, oAccessor, nAccessor) {
     var self = this;
 
@@ -278,30 +279,12 @@ angular.module('ui.grid')
       // The unfound new rows is either `unfoundNewRowsToFind`, if row hashing is turned on, or straight `newRawData` if it isn't
       var unfoundNew = (unfoundNewRowsToFind || newRawData);
 
-      // var iter = 0;
-      // newRows = newRows.concat(unfoundNew.filter(function (newItem) {
-      //   return !self.rows.some(function(oldRow) {
-      //     iter++;
-      //     return self.options.rowEquality(oldRow.entity, newItem);
-      //   });
-      // }));
-
       // Search for real new rows in `unfoundNew` and concat them onto `newRows`
       newRows = newRows.concat(self.newInN(self.rows, unfoundNew, 'entity'));
-
-      /*for (i = 0; i < newRows.length; i++) {
-        self.addRows([newRows[i]]);
-      }*/
+      
       self.addRows(newRows);
-
-      // Look for deleted rows
-      // var deletedRows = (unfoundOldRows || self.rows).filter(function (oldRow) {
-      //   return !newRawData.some(function (newItem) {
-      //     return self.options.rowEquality(newItem, oldRow.entity);
-      //   });
-      // });
+      
       var deletedRows = self.getDeletedRows((unfoundOldRows || self.rows), newRawData);
-      // var deletedRows = newInN(unfoundNewRowsToFind, (unfoundOldRows || self.rows), null, 'entity');
 
       for (i = 0; i < deletedRows.length; i++) {
         if (self.options.enableRowHashing) {
